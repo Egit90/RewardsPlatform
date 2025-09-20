@@ -1,0 +1,79 @@
+version: "3.9"
+services:
+  gateway:
+    build: ./Gateway
+    ports: ["8080:8080"]
+    depends_on: [identityservice, customerservice, rewardsservice, notificationservice]
+
+  identityservice:
+    build: ./IdentityService
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on: [postgres, redis]
+
+  customerservice:
+    build: ./CustomerService
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on: [postgres]
+
+  rewardsservice:
+    build: ./RewardsService
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on: [postgres]
+
+  notificationservice:
+    build: ./NotificationService
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on: []
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+
+volumes:
+  pgdata:
+services:
+  customerservice:
+    image: customerservice
+    build:
+      context: .
+      dockerfile: CustomerService/Dockerfile
+
+services:
+  gateway:
+    image: gateway
+    build:
+      context: .
+      dockerfile: Gateway/Dockerfile
+
+services:
+  identityservice:
+    image: identityservice
+    build:
+      context: .
+      dockerfile: IdentityService/Dockerfile
+
+services:
+  notificationservice:
+    image: notificationservice
+    build:
+      context: .
+      dockerfile: NotificationService/Dockerfile
+
+services:
+  rewardsservice:
+    image: rewardsservice
+    build:
+      context: .
+      dockerfile: RewardsService/Dockerfile
+
