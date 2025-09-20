@@ -7,4 +7,6 @@ public static class MainErrors
 
     public static readonly Error CustomerNotFound =
         Error.NotFound("customer.not_found", "Customer was not found.");
+    
+    public static Error NotificationFailure(string errorMessage) => Error.Failure("sns.failed" , $"SNS returned {errorMessage}");
 }

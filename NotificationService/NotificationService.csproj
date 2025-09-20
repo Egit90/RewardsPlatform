@@ -8,6 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3" />
+    <PackageReference Include="AWSSDK.SimpleEmailV2" Version="4.0.5.2" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="4.0.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.7" />
   </ItemGroup>
 
@@ -15,6 +18,10 @@
     <Content Include="..\.dockerignore">
       <Link>.dockerignore</Link>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SharedKernel\SharedKernel.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,8 +1,27 @@
+using Amazon.SimpleNotificationService;
+using NotificationService.Models;
+using NotificationService.Services;
+using NotificationService.Services.Email;
+using NotificationService.Services.SMS;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<ISmsSender, FakeSmsSender>();
+    builder.Services.AddScoped<IEmailSender, FakeEmailSender>();
+}
+else
+{
+    builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+    builder.Services.AddAWSService<IAmazonSimpleNotificationService>();
+    builder.Services.AddScoped<ISmsSender, SmsSender>();
+    builder.Services.AddScoped<IEmailSender, SesEmailSender>();
+}
 
 var app = builder.Build();
 
@@ -14,28 +33,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.MapPost("/notifications/sms",
+    async (SmsRequest smsRequest, ISmsSender sender) =>
+    {
+        var result = await sender.Send(smsRequest.PhoneNumber,smsRequest.Message);
+        return result.IsSuccess
+            ? Results.Ok(new { messageId = result.Value })
+            : Results.BadRequest(new { error = result.Error });
+    });
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
