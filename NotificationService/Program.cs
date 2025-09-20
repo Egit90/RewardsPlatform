@@ -1,4 +1,6 @@
 using Amazon.SimpleNotificationService;
+using NotificationService.EndPoints.Broadcast;
+using NotificationService.EndPoints.Notifications;
 using NotificationService.Models;
 using NotificationService.Services;
 using NotificationService.Services.Email;
@@ -32,15 +34,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.MapPost("/notifications/sms",
-    async (SmsRequest smsRequest, ISmsSender sender) =>
-    {
-        var result = await sender.Send(smsRequest.PhoneNumber,smsRequest.Message);
-        return result.IsSuccess
-            ? Results.Ok(new { messageId = result.Value })
-            : Results.BadRequest(new { error = result.Error });
-    });
+app.MapBroadcast();
+app.MapNotificationEndpoints();
 
 app.Run();
 
